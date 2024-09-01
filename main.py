@@ -66,9 +66,9 @@ def run(radii):
     noise_layers = []  # List to store noise layers for each radius
     filename = "noise"  # Base filename for saving images
 
-    # Create a new image using PIL for the first noise texture
+    # Create a new image using PIL for the initial noise texture
     img = Image.new(mode="RGB", size=(WIDTH, HEIGHT))
-    pixels1 = img.load()  # Pixel access object for the first image
+    pixels = img.load()  # Pixel access object for the first image
 
     t = time.time()  # Start timing for performance measurement
 
@@ -76,7 +76,7 @@ def run(radii):
     for y in range(HEIGHT):
         for x in range(WIDTH):
             color = noise()  # Generate a random noise color
-            pixels1[x, y] = color  # Set the pixel in the PIL image
+            pixels[x, y] = color  # Set the pixel in the PIL image
 
     print(f"Done generating initial noise in {time.time() - t} ms")
 
@@ -96,34 +96,33 @@ def run(radii):
         # Re-apply blur after amplification
         img_blurred = img_blurred.filter(ImageFilter.GaussianBlur(r))
 
-        noise_layers.append(img_blurred)  # Append this blurred image as a layer
-
-        img_blurred.save(
-            f"{filename}_blurred_radius_{r}.png"
-        )  # Save the blurred noise image
+        # Save the blurred noise image
+        img_blurred.save(f"{filename}_blurred_radius_{r}.png")
 
         print(
             f"Done blurring and amplifying image with radius {r} in {time.time() - t} ms"
         )
 
-    # Create another image for layering the generated noise textures
-    layered_img = Image.new(mode="RGB", size=(WIDTH, HEIGHT))
-    pixels_layered = layered_img.load()
+        noise_layers.append(img_blurred)  # Append this blurred image as a layer
 
-    # Initialize the final noise to be the same as the initial noise
+    # Create an image for the final combined noise texture
+    final_img = Image.new(mode="RGB", size=(WIDTH, HEIGHT))
+    pixels_final = final_img.load()
+
+    # Combine all blurred noise layers into one final image
     for y in range(HEIGHT):
         for x in range(WIDTH):
-            combined_color = (0, 0, 0)  # Initialize the combined color
+            combined_color = (0, 0, 0)  # Initialize the combined color to black
             for layer in noise_layers:
-                color1 = pixels1[x, y]
-                color2 = layer.getpixel((x, y))
+                color1 = pixels_final[x, y]  # Get the current combined color
+                color2 = layer.getpixel((x, y))  # Get the color from the current layer
                 combined_color = add_noise(color1, color2, 1)
-            pixels_layered[x, y] = combined_color
-            SCREEN.set_at((x, y), combined_color)
+            pixels_final[x, y] = combined_color  # Update the final image pixel
+            SCREEN.set_at(
+                (x, y), combined_color
+            )  # Update PyGame screen with the combined color
 
-    layered_img.save(
-        f"{filename}_layered_combined.png"
-    )  # Save the combined noise image
+    final_img.save(f"{filename}_layered_combined.png")  # Save the combined noise image
 
     print(f"Done layering all images in {time.time() - t} ms")
 
