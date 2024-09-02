@@ -27,31 +27,19 @@ delta_time = 0.0
 
 
 def noise():
-    """
-    Generate a random noise color tuple (R, G, B).
-    The values are clamped between 0 and 255 to ensure valid color ranges.
-    """
     r1, r2, r3 = random.random(), random.random(), random.random()
     value = int(random.randint(0, 255) * r1 / r2 + r3)
     return clamp(value, 0, 255), clamp(value, 0, 255), clamp(value, 0, 255)
 
 
 def amplify(value, amplitude):
-    """
-    Amplify the noise value based on an amplitude parameter.
-    Adjusts the color intensity based on the provided amplitude.
-    """
     value = (value / 128 - 1) * amplitude
     value = int((value + 1) * 128)
     return clamp(value, 0, 255), clamp(value, 0, 255), clamp(value, 0, 255)
 
 
 def add_noise(color1, color2, amount):
-    """
-    Combine two noise textures with a specified blending amount.
-    The amount determines the influence of the second noise texture.
-    """
-    value = color1[0] + (color2[0] / 128 - 1) * amount
+    value = color1[0] + color2[0] * amount
     value = int(value)
     return clamp(value, 0, 255), clamp(value, 0, 255), clamp(value, 0, 255)
 
